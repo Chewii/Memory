@@ -1,31 +1,23 @@
 package Game;
 
-
-import java.awt.Color;
-
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 public class Kort extends JButton{
 	
 	private Kort copy;
+	private Status status = Status.SAKNAS;
+	private Icon icon = super.getIcon();
 	
-	Status status = Status.DOLT;
-	
-	//Ingen aning om man ska ha det såhär med icon
-	OvalIcon ii = new OvalIcon(10,10,Color.BLACK, true);
-	
-	public Kort(OvalIcon i){
+	public Kort(Icon i){
 		
-		this.ii = i;
+		this.icon = i;
 		
 	}
 	
-	public Kort(OvalIcon i, Status status){	
-		
-		this.ii = i;
-		
+	public Kort(Icon i, Status status){	
+
+		super.setIcon(i);
 		this.status = status;
 		
 	}
@@ -38,25 +30,13 @@ public class Kort extends JButton{
 	
 	public void setStatus(Status status) {
 		
-		if(status == Status.DOLT){
-			
-			this.status = status;
-			
-		} else if(status == Status.SAKNAS){
-			
-			this.status = status;
-			
-		} else if(status == Status.SYNLIGT){
-			
-			this.status = status;
-			
-		}
+		this.status = status;
 		
 	}
 	
 	public Status getStatus(){
 		
-		return this.status;
+		return status;
 		
 	}
 	
@@ -68,13 +48,11 @@ public class Kort extends JButton{
 	
 	public boolean sammaBild(Kort kort){
 		
-		/*if(kort.image != null){
-			
-			if(this.image.toString() == kort.image.toString()){
-				return true;
-			}
-		}*/
+		if(kort.icon != null){
 		
+			
+			
+		}
 		return false;
 	}
 	
