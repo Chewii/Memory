@@ -1,0 +1,22 @@
+import java.util.Random;
+
+
+public class Verktyg {
+	public static void slumpOrdning(Object[] field){
+		
+		Object tempfield [] = new Object[field.length];
+		Random rand = new Random();
+
+		for (int i = 0; i < field.length; i++){
+			int randomnum = rand.nextInt(field.length);
+			
+			while(tempfield[randomnum] != null){
+				randomnum = rand.nextInt(field.length);
+			}
+			tempfield[randomnum] = field[i];
+		}
+		for(int k = 0; k < field.length; k++){
+			field[k] = tempfield[k];
+		}
+	}
+}
