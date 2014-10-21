@@ -1,0 +1,296 @@
+package Game;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.awt.*;
+
+import javax.swing.*;
+
+
+import Game.Kort.Status;
+
+public class Memory extends JFrame{
+	
+	private static int BOX_WIDTH = 64;
+	private static int columns = 10;
+	private static int rows = 10;
+	private static boolean largeEnough = false;
+	private int nbrOfSquares = rows * columns;
+	private boolean timerRunning = false;
+	private int visibleCards = 0;
+	private int playerScore1 = 0;
+	private int playerScore2 = 0;
+	
+	Verktyg tools = new Verktyg();
+	
+	Timer timer = new Timer(500, new ChangeCardListener());
+	
+	File bildmapp = new File("Bildmapp");
+	File[] bilder = bildmapp.listFiles();
+	ImageIcon[] imgIcon = new ImageIcon[bilder.length];
+	
+	Kort[] k = new Kort[bilder.length];
+	Kort[] spelPlan = new Kort[rows*columns];
+	
+	Kort k1;
+	Kort k2;
+	Font font = new Font("Verdana", Font.PLAIN, 25);
+	
+	public Memory(){
+		
+		GameField gameField = new GameField();
+		Options options = new Options();
+		Players players = new Players();
+
+		
+		setSize(500,500);
+		setLocationRelativeTo(null);
+		setTitle("Memory");
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		getImages();
+		nyttSpel();
+		
+		for(int i = 0; i < nbrOfSquares; i++){
+
+			gameField.add(spelPlan[i]);
+			spelPlan[i].addActionListener(gameField);
+
+		}
+		
+		players.setBackground(Color.black);
+		players.setLayout(new GridLayout(2,1));
+		add(players, BorderLayout.WEST);
+		
+		
+		gameField.setLayout(new GridLayout(rows,columns));
+		add(options, BorderLayout.SOUTH);
+		add(gameField);
+		
+		setVisible(true);
+		
+	}
+	
+	private class Players extends JPanel {
+		
+		JPanel player1 = new JPanel();
+		JPanel player2 = new JPanel();
+		
+		
+		JLabel name1 = new JLabel("Spelare 1");
+		JLabel score1 = new JLabel(String.valueOf(playerScore1));
+		
+		JLabel name2 = new JLabel("Spelare 2");
+		JLabel score2 = new JLabel(String.valueOf(playerScore2));
+		
+		public Players(){
+		
+			name1.setFont(font);
+			score1.setFont(font);
+			name2.setFont(font);
+			score2.setFont(font);
+			
+			score1.setHorizontalAlignment(JLabel.CENTER);
+			score2.setHorizontalAlignment(JLabel.CENTER);
+			
+			player1.add(name1);
+			player1.add(score1);
+			player1.setLayout(new GridLayout(2,1));
+			
+			player2.add(name2);
+			player2.add(score2);
+			player2.setLayout(new GridLayout(2,1));
+			
+			add(player1);
+			add(player2);
+			
+		}
+		
+	}
+	
+	private class GameField extends JPanel implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try{
+			if(visibleCards < 3){
+				
+				visibleCards++;
+				if(visibleCards == 2){
+					if(((Kort) e.getSource()).getStatus() != Status.SYNLIGT){
+				
+					k2 = ((Kort) e.getSource()).copy();
+					k2.setStatus(Status.SYNLIGT);
+					timer.start();
+					timerRunning = true;
+					
+
+					}else{
+						
+						k2.setStatus(Status.SAKNAS);
+						timer.start();
+						timerRunning = true;
+						
+						
+					}
+				}
+
+
+				if(((Kort) e.getSource()).getStatus() == Status.DOLT){ //varför inte == dolt?
+					((Kort) e.getSource()).setStatus(Status.SYNLIGT);
+
+				}
+			
+			
+			if(visibleCards == 1 && ((Kort) e.getSource()).getStatus() == Status.SYNLIGT){ 
+				
+				
+				k1 = ((Kort) e.getSource()).copy();
+			}}
+
+			}catch(NullPointerException o){
+				((Kort) e.getSource()).setStatus(Status.DOLT);
+				k2 = ((Kort) e.getSource()).copy();
+				k2.setStatus(Status.SYNLIGT);
+				timer.start();
+				timerRunning = true;
+			
+			}
+		}
+
+	}
+	
+	private class Options extends JPanel implements ActionListener{
+		
+		JButton terminate = new JButton();
+		JButton newGame = new JButton();
+		
+		public Options(){
+			
+			terminate.setText("Avsluta");
+			terminate.addActionListener(this);
+			
+			newGame.setText("Nytt");
+			newGame.addActionListener(this);
+			
+			add(terminate);
+			add(newGame);
+			
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			if(e.getSource() == terminate){
+				
+				System.exit(1);
+			
+			} else if(e.getSource() == newGame){
+
+				nyttSpel();
+			}
+		}
+	}
+	
+	public void getImages(){
+		
+		for(int i = 0; i < bilder.length; i++){
+
+			imgIcon[i] = new ImageIcon(bilder[i].getPath());
+
+			k[i] = new Kort((Icon) imgIcon[i], Status.DOLT);
+
+		}
+		
+	}
+	
+	public void nyttSpel(){
+		
+		tools.slumpOrdning(k);
+		
+		for(int i = 0; i < nbrOfSquares; i++){
+			
+			if(i < nbrOfSquares / 2){
+				spelPlan[i] = k[i];
+			} else {
+				spelPlan[i] = spelPlan[i-(nbrOfSquares / 2)].copy();
+			}
+			
+		}
+		
+		tools.slumpOrdning(spelPlan);
+
+		
+	}
+	
+	private class ChangeCardListener implements ActionListener {
+		
+        public void actionPerformed(ActionEvent e) {
+        	
+        	if(timerRunning){
+
+        		if(k2.sammaBild(k1)){
+        			
+        			for(int j = 0; j < nbrOfSquares; j++){
+        				
+        				for(int k = 0; k < nbrOfSquares; k++){
+        					
+        					if(spelPlan[j].sammaBild(k2)){
+
+        						
+        						spelPlan[j].setStatus(Status.SAKNAS);
+
+        						if(spelPlan[k].toString() == k1.toString()){
+
+        							System.out.println(k);
+        							spelPlan[k].setStatus(Status.SAKNAS);
+        							timer.stop();
+        							timerRunning = false;
+
+        						}
+        					}
+        				}
+        			}
+        				
+        			} else {
+        				
+        				for(int i = 0; i < nbrOfSquares; i++){
+        				
+        				if(spelPlan[i].getStatus() != Status.SAKNAS){
+        					spelPlan[i].setStatus(Status.DOLT);
+        					timer.stop();
+        					timerRunning = false;
+        				}
+        			}
+        		}
+        		timer.stop();
+        		timerRunning = false;
+        		visibleCards = 0;
+        	}
+        }
+        
+    }
+	
+	public static void main(String[] args){ 
+		
+		while(!largeEnough){
+			rows = Integer.parseInt(JOptionPane.showInputDialog("Hur många rader ska ditt Memory spel ha?"));
+			columns = Integer.parseInt(JOptionPane.showInputDialog("Hur många kolumner ska ditt Memory spel ha?"));
+
+			if(rows <= 10 && columns <= 10 && (rows * columns) % 2 == 0){
+
+				largeEnough = true;
+
+			} else {
+
+				JOptionPane.showMessageDialog(null, "Oj, så stort Memory kan du inte ha, välj igen. Rader <= 10, kolumner <= 10. Det måste också vara ett jämt antal rutor");
+			}
+		}
+		
+		new Memory();
+		
+	}
+
+
+}
